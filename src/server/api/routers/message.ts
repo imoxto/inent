@@ -20,7 +20,6 @@ export const rootRouter = createTRPCRouter({
     .input(
       z.object({
         messageContent: z.string(),
-        targetUserId: z.string().cuid2(),
         roomId: z.string().cuid2(),
       })
     )
@@ -29,6 +28,44 @@ export const rootRouter = createTRPCRouter({
         data: {
           content: input.messageContent,
           roomId: input.roomId,
+          userId: ctx.session.user.id,
+        },
+      });
+    }),
+
+  sendInitialDm: protectedProcedure
+    .input(
+      z.object({
+        messageContent: z.string(),
+        targetUserId: z.string().cuid2(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const currentUserId = ctx.session.user.id;
+      const room = await ctx.prisma.room.create({
+        data: {
+          name: "DM",
+          userRoom: {
+            create: {
+              userId: currentUserId,
+              inviterId: currentUserId,
+              role: "owner",
+            },
+          },
+        },
+      });
+      await ctx.prisma.userRoom.create({
+        data: {
+          roomId: room.id,
+          userId: input.targetUserId,
+          inviterId: currentUserId,
+        },
+      });
+
+      return ctx.prisma.message.create({
+        data: {
+          content: input.messageContent,
+          roomId: room.id,
           userId: ctx.session.user.id,
         },
       });

@@ -8,7 +8,7 @@ import {
 export const roomRouter = createTRPCRouter({
   getAll: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.room.findMany({
-      where: { OR: [{ visibility: "public" }] },
+      where: { visibility: "public" },
     });
   }),
 
