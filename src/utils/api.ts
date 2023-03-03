@@ -43,6 +43,19 @@ export const api = createTRPCNext<AppRouter>({
           url: `${getBaseUrl()}/api/trpc`,
         }),
       ],
+
+      queryClientConfig: {
+        defaultOptions: {
+          queries: {
+            staleTime: 180000,
+            cacheTime: Infinity,
+            retry: false,
+          },
+          mutations: {
+            retry: false,
+          },
+        },
+      },
     };
   },
   /**
@@ -50,7 +63,7 @@ export const api = createTRPCNext<AppRouter>({
    *
    * @see https://trpc.io/docs/nextjs#ssr-boolean-default-false
    */
-  ssr: false,
+  ssr: true,
 });
 
 /**

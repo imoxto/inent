@@ -6,6 +6,25 @@ import {
 } from "~/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
+  getOne: publicProcedure
+    .input(
+      z
+        .object({
+          userId: z.string().cuid2(),
+        })
+        .strict()
+    )
+    .query(({ ctx, input }) => {
+      const currentUserId = ctx.session?.user.id;
+      const { userId } = input;
+      return ctx.prisma.user.findFirst({
+        where:
+          userId === currentUserId
+            ? { id: userId }
+            : { id: userId, visibility: "public" },
+      });
+    }),
+
   getAll: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.user.findMany({
       where: { OR: [{ visibility: "public" }, { id: ctx.session?.user.id }] },

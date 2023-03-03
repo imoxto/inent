@@ -1,6 +1,5 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import { AuthButton } from "~/client/common/auth";
 
 const Home: NextPage = () => {
   return (
