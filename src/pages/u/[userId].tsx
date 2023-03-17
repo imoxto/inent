@@ -2,6 +2,7 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { ErrorComponent, Loading } from "~/client/common/errors";
+import { Seo } from "~/client/Seo";
 import { UserDetails } from "~/client/user";
 import { api } from "~/utils/api";
 
@@ -16,12 +17,11 @@ const User: NextPage = () => {
   }
   return (
     <>
-      <Head>
-        <title>{`${
-          user.username || user.name || "Unknown User"
-        } | Inent`}</title>
-        <meta name="description" content={user.description ?? "Unknown user"} />
-      </Head>
+      <Seo
+        title={`${user.username || user.name || "Unknown User"} | Inent`}
+        description={user.description ?? "Unknown user"}
+        ogImage={user.image ?? undefined}
+      />
       <UserDetails user={user} />
     </>
   );

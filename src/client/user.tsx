@@ -24,11 +24,11 @@ export const UserDetails: React.FC<{
 };
 
 export const UserCardMin: React.FC<{
-  user: Pick<User, "username" | "id" | "name" | "image">;
+  user: Pick<User, "id" | "name" | "image">;
 }> = ({ user }) => {
   return (
     <Link
-      className="mx-4 flex flex-row items-center gap-2 rounded-full p-2 hover:bg-white/5"
+      className="mx-4 flex flex-row items-center gap-2 rounded p-2 hover:bg-white/5"
       href={`/u/${user.id}`}
     >
       <Image
@@ -38,7 +38,26 @@ export const UserCardMin: React.FC<{
         width={40}
         height={40}
       />
-      {user.username || user.name}
+      {user.name}
     </Link>
+  );
+};
+
+export const UserListMin: React.FC<{
+  users: Pick<User, "username" | "id" | "name" | "image">[];
+}> = ({ users }) => {
+  return (
+    <div>
+      {users.map((user) => (
+        <UserCardMin
+          key={user.id}
+          user={{
+            id: user.id,
+            name: user.name ?? null,
+            image: user.image ?? null,
+          }}
+        />
+      ))}
+    </div>
   );
 };

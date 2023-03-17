@@ -89,12 +89,13 @@ model Room {
 
 model UserRoom {
     roomId    String
-    room      Room          @relation(fields: [roomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    room      Room         @relation(fields: [roomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
     userId    String
-    user      User          @relation("user", fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    user      User         @relation("user", fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
     inviterId String
-    inviter   User          @relation("inviter", fields: [inviterId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    role      UserRoomRole?
+    inviter   User         @relation("inviter", fields: [inviterId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    role      UserRoomRole @default(member)
+    confirmed Boolean      @default(false)
 
     @@id([roomId, userId])
 }

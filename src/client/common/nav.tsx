@@ -1,6 +1,4 @@
 import { useSession } from "next-auth/react";
-import Image from "next/image";
-import Link from "next/link";
 import { UserCardMin } from "../user";
 import { AuthButton } from "./auth";
 
@@ -16,7 +14,6 @@ export const Navbar: React.FC = () => {
             user={{
               id: sessionData.user.id,
               name: sessionData.user.name ?? null,
-              username: sessionData.user.username ?? null,
               image: sessionData.user.image ?? null,
             }}
           />
