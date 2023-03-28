@@ -2,11 +2,11 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
-export const rootRouter = createTRPCRouter({
+export const userRoomRouter = createTRPCRouter({
   getUserRooms: protectedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.userRoom.findMany({
       where: { userId: ctx.session.user.id },
-      include: { room: { select: { name: true } } },
+      include: { room: { select: { name: true, image: true } } },
     });
   }),
 

@@ -1,5 +1,4 @@
 import { type NextPage } from "next";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { ErrorComponent, Loading } from "~/client/common/errors";
 import { Seo } from "~/client/Seo";

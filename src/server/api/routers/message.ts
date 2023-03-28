@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
-export const rootRouter = createTRPCRouter({
+export const messageRouter = createTRPCRouter({
   getAll: protectedProcedure
     .input(z.object({ roomId: z.string().cuid2() }))
     .query(({ input, ctx }) => {
@@ -12,6 +12,9 @@ export const rootRouter = createTRPCRouter({
             id: input.roomId,
             userRoom: { some: { userId: ctx.session.user.id } },
           },
+        },
+        include: {
+          user: { select: { image: true } },
         },
       });
     }),

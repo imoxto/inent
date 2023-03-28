@@ -12,12 +12,6 @@ export const roomRouter = createTRPCRouter({
     });
   }),
 
-  getMy: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.room.findMany({
-      where: { userRoom: { some: { userId: ctx.session.user.id } } },
-    });
-  }),
-
   create: protectedProcedure
     .input(
       z

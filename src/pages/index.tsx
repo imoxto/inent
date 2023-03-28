@@ -1,13 +1,14 @@
 import { type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { Seo } from "~/client/Seo";
+import { UserHomePage } from "~/client/user";
 
 const Home: NextPage = () => {
-  useSession()
+  const { data: sessionData } = useSession();
   return (
     <>
       <Seo />
-      <div>Welcome to Inent!</div>
+      {!sessionData ? <div>Welcome to Inent!</div> : <UserHomePage />}
     </>
   );
 };

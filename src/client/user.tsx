@@ -1,6 +1,12 @@
 import { User } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { api } from "~/utils/api";
+import { useState } from "react";
+import { UserRooms } from "./userRoom";
+import { CardMin } from "./common/small";
+import { RoomDetails } from "./room";
 
 export const UserDetails: React.FC<{
   user: Omit<User, "emailVerified" | "email">;
@@ -27,18 +33,8 @@ export const UserCardMin: React.FC<{
   user: Pick<User, "id" | "name" | "image">;
 }> = ({ user }) => {
   return (
-    <Link
-      className="mx-4 flex flex-row items-center gap-2 rounded p-2 hover:bg-white/5"
-      href={`/u/${user.id}`}
-    >
-      <Image
-        className="rounded-full"
-        src={user.image || "/favicon.ico"}
-        alt="user's image"
-        width={40}
-        height={40}
-      />
-      {user.name}
+    <Link href={`/u/${user.id}`}>
+      <CardMin content={{ name: user.name, image: user.image }} />
     </Link>
   );
 };
@@ -58,6 +54,38 @@ export const UserListMin: React.FC<{
           }}
         />
       ))}
+    </div>
+  );
+};
+
+export const UserHomePage = () => {
+  const { data: sessionData } = useSession();
+  const { data: userRooms } = api.userRoom.getUserRooms.useQuery();
+  const [roomId, setRoomId] = useState<string | null>(null);
+  if (!sessionData) {
+    return null;
+  }
+  return (
+    <div>
+      <div>
+        <UserRooms
+          userRooms={userRooms ?? []}
+          onChatSelect={(roomId: string) => setRoomId(roomId)}
+        />
+        <UserRooms
+          userRooms={userRooms ?? []}
+          onChatSelect={(roomId: string) => setRoomId(roomId)}
+        />
+      </div>
+      <UserRooms
+        userRooms={userRooms ?? []}
+        onChatSelect={(roomId: string) => setRoomId(roomId)}
+      />
+      {roomId ? (
+        <RoomDetails roomId={roomId} />
+      ) : (
+        "select a room to view its messages"
+      )}
     </div>
   );
 };

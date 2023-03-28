@@ -79,6 +79,7 @@ enum UserRoomRole {
 model Room {
     id          String     @id @default(cuid())
     name        String
+    image       String?
     description String?
     visibility  Visibility @default(public)
     createdAt   DateTime   @default(now())
