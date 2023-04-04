@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 import { useState } from "react";
 import { UserRooms } from "./userRoom";
-import { CardMin } from "./common/small";
+import { CardMin, SearchUserBar } from "./common/small";
 import { RoomDetails } from "./room";
 
 export const UserDetails: React.FC<{
@@ -68,10 +68,7 @@ export const UserHomePage = () => {
   return (
     <div>
       <div>
-        <UserRooms
-          userRooms={userRooms ?? []}
-          onChatSelect={(roomId: string) => setRoomId(roomId)}
-        />
+        <SearchUserBar />
         <UserRooms
           userRooms={userRooms ?? []}
           onChatSelect={(roomId: string) => setRoomId(roomId)}

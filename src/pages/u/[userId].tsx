@@ -1,6 +1,7 @@
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
 import { ErrorComponent, Loading } from "~/client/common/errors";
+import Modal from "~/client/common/modal";
 import { Seo } from "~/client/Seo";
 import { UserDetails } from "~/client/user";
 import { api } from "~/utils/api";
@@ -22,6 +23,7 @@ const User: NextPage = () => {
         ogImage={user.image ?? undefined}
       />
       <UserDetails user={user} />
+      <Modal button={<button>Hello!</button>}>{() => <div>hello!</div>}</Modal>
     </>
   );
 };

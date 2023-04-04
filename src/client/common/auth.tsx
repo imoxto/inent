@@ -5,7 +5,7 @@ export const AuthButton: React.FC = () => {
 
   return (
     <button
-      className="rounded bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
+      className="rounded bg-white/5 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/10"
       onClick={sessionData ? () => void signOut() : () => void signIn()}
     >
       {sessionData ? "Sign out" : "Sign in"}
