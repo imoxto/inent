@@ -175,16 +175,16 @@ export default function IndexPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // subscribe to new posts and add
-  // api.post.onAdd.useSubscription(undefined, {
-  //   onData(post) {
-  //     addMessages([post]);
-  //   },
-  //   onError(err) {
-  //     console.error("Subscription error:", err);
-  //     // we might have missed a message - invalidate cache
-  //     utils.post.infinite.invalidate();
-  //   },
-  // });
+  api.message.onAdd.useSubscription(undefined, {
+    onData(post) {
+      addMessages([post]);
+    },
+    onError(err) {
+      console.error("Subscription error:", err);
+      // we might have missed a message - invalidate cache
+      utils.message.infinite.invalidate();
+    },
+  });
 
   const [currentlyTyping, setCurrentlyTyping] = useState<string[]>([]);
   // api.post.whoIsTyping.useSubscription(undefined, {
