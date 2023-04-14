@@ -25,21 +25,6 @@ export const userRouter = createTRPCRouter({
       });
     }),
 
-  search: publicProcedure.input(z.string()).query(({ input, ctx }) => {
-    return ctx.prisma.user.findMany({
-      select: { id: true, name: true, username: true, image: true },
-      where: {
-        visibility: "public",
-        OR: [
-          { username: { search: input } },
-          { name: { search: input } },
-          { id: { search: input } },
-        ],
-      },
-      take: 5,
-    });
-  }),
-
   update: protectedProcedure
     .input(
       z

@@ -1,9 +1,9 @@
-import { RouterOutput } from "~/server/types";
+import { RouterOutputs } from "~/utils/api";
 import { CardMin } from "./common/small";
 
 export const UserRooms: React.FC<{
-  userRooms: RouterOutput["userRoom"]["getUserRooms"];
-  onChatSelect: (roomId: string) => void;
+  userRooms: RouterOutputs["userRoom"]["getUserRooms"];
+  onChatSelect?: (roomId: string) => void;
 }> = ({ userRooms, onChatSelect }) => {
   return (
     <div>
@@ -12,9 +12,9 @@ export const UserRooms: React.FC<{
           key={roomId}
           content={{
             name: room.name ?? "Unnamed Chat",
-            image: room.image ?? "\\inent.png",
+            image: room.image ?? "/inent.png",
           }}
-          onClick={() => onChatSelect(roomId)}
+          onClick={() => onChatSelect?.(roomId)}
         />
       ))}
     </div>
