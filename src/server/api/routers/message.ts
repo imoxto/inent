@@ -1,6 +1,16 @@
+import { observable } from "@trpc/server/observable";
 import { z } from "zod";
+import { Realtime } from "ably";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { env } from "~/env.mjs";
+import { Message } from "@prisma/client";
+
+const ably = new Realtime.Promise(env.ABLY_API_KEY);
+ably.connection.once("connected", () => console.log("Connected to Ably!"));
+const getRoomChannel = (roomId: string) => ably.channels.get(`room:${roomId}`);
+
+console.log("Connected to Ably!");
 
 export const messageRouter = createTRPCRouter({
   infinite: protectedProcedure
@@ -53,13 +63,16 @@ export const messageRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      return ctx.prisma.message.create({
+      const channel = getRoomChannel(input.roomId);
+      const message = await ctx.prisma.message.create({
         data: {
           content: input.messageContent,
           roomId: input.roomId,
           userId: ctx.session.user.id,
         },
       });
+
+      await channel.publish("add", message);
     }),
 
   sendInitialDm: protectedProcedure
@@ -97,6 +110,33 @@ export const messageRouter = createTRPCRouter({
           roomId: room.id,
           userId: ctx.session.user.id,
         },
+      });
+    }),
+
+  onAdd: protectedProcedure
+    .input(z.string())
+    .subscription(async ({ input }) => {
+      const channel = getRoomChannel(input);
+      return observable<
+        Message & {
+          user: {
+            name: string | null;
+            image: string | null;
+          };
+        }
+      >((emit) => {
+        const onAdd = (message: {
+          data: Message & {
+            user: {
+              name: string | null;
+              image: string | null;
+            };
+          };
+        }) => {
+          emit.next(message.data);
+        };
+
+        channel.subscribe("add", onAdd);
       });
     }),
 });

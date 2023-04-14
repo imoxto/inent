@@ -17,6 +17,7 @@
     "@trpc/next": "^10.9.0",
     "@trpc/react-query": "^10.9.0",
     "@trpc/server": "^10.9.0",
+    "ably": "^1.2.39",
     "lodash": "^4.17.21",
     "next": "13.1.6",
     "next-auth": "^4.19.0",
