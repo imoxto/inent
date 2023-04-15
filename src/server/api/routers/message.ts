@@ -96,7 +96,7 @@ export const messageRouter = createTRPCRouter({
             create: {
               userId: currentUserId,
               inviterId: currentUserId,
-              role: "owner",
+              role: "admin",
             },
           },
         },

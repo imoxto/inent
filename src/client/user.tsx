@@ -2,11 +2,9 @@ import { User } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { RouterInputs, RouterOutputs, api } from "~/utils/api";
-import { useState } from "react";
+import { RouterInputs, api } from "~/utils/api";
 import { UserRooms } from "./userRoom";
 import { CardMin, SearchUserBar } from "./common/small";
-import { RoomDetails } from "./room";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { enqueueSnackbar } from "notistack";
 
@@ -63,7 +61,8 @@ export const UserListMin: React.FC<{
 export const UserHomePage = () => {
   const { data: sessionData } = useSession();
   const { data: helloSecuredMessage } = api.root.helloSecured.useQuery();
-  const { data: userRooms } = api.userRoom.getUserRooms.useQuery();
+  const { data: userRooms, refetch: refetchUserRooms } =
+    api.userRoom.getUserRooms.useQuery();
   const {
     register,
     handleSubmit,
@@ -75,6 +74,10 @@ export const UserHomePage = () => {
   const onSubmit: SubmitHandler<RouterInputs["room"]["create"]> = (data) => {
     mutateAsync(data, {
       onError: (error) => enqueueSnackbar(error.message, { variant: "error" }),
+      onSuccess: () => {
+        enqueueSnackbar("Room created", { variant: "success" });
+      },
+      onSettled: () => refetchUserRooms(),
     });
   };
 

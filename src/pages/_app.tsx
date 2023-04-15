@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Navbar } from "~/client/common/nav";
 import { useRouter } from "next/router";
 import { SnackbarProvider } from "notistack";
@@ -24,6 +25,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
           <Component {...pageProps} />
         </main>
       </SessionProvider>
+      <ReactQueryDevtools />
     </SnackbarProvider>
   );
 };

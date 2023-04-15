@@ -27,7 +27,7 @@ export const roomRouter = createTRPCRouter({
       return ctx.prisma.room.create({
         data: {
           ...input,
-          userRoom: { create: { userId, inviterId: userId, role: "owner" } },
+          userRoom: { create: { userId, inviterId: userId, role: "admin" } },
         },
       });
     }),

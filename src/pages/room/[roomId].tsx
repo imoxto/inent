@@ -81,7 +81,7 @@ function AddMessageForm({
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="flex-1 bg-transparent outline-0"
+              className="flex-1 resize-none bg-transparent outline-0"
               rows={message.split(/\r|\n/).length}
               id="text"
               name="text"
@@ -91,6 +91,7 @@ function AddMessageForm({
                   setEnterToPostMessage(false);
                 }
                 if (e.key === "Enter" && enterToPostMessage) {
+                  e.preventDefault();
                   void postMessage();
                 }
                 // isTyping.mutate({ typing: true });
@@ -206,7 +207,7 @@ export default function IndexPage() {
 
     const _channel = ably.channels.get(`roomId:${roomId}`);
     _channel.subscribe((data: Ably.Types.Message) => {
-      console.log(data);
+      // console.log(data);
       addMessages([data.data]);
     });
     // setChannel(_channel);
