@@ -9,7 +9,7 @@ import { api } from "~/utils/api";
 import * as Ably from "ably/promises";
 import { configureAbly } from "@ably-labs/react-hooks";
 import { ChatSideBar } from "~/client/room";
-import { JoinRoomForm } from "~/client/forms/roomForms";
+import { DeleteMessageForm, JoinRoomForm } from "~/client/forms/roomForms";
 
 function AddMessageForm({
   onMessagePost,
@@ -250,33 +250,46 @@ export default function IndexPage() {
                 ? "Load More"
                 : "Nothing more to load"}
             </button>
-            <div className="space-y-4">
-              {messages?.map((item) => (
-                <div className="flex flex-row justify-start gap-2">
-                  <Image
-                    src={item.user.image ?? "/inent.png"}
-                    alt={`${item.user.name}'s image`}
-                    width={40}
-                    height={40}
-                    className="h-10 w-10 rounded-full p-1"
-                  />
-                  <article key={item.id} className=" text-gray-50">
-                    <header className="flex space-x-2 text-sm">
-                      <h3 className="text-base">{item.user.name}</h3>
-                      <span className="text-gray-500">
-                        {new Intl.DateTimeFormat("en-GB", {
-                          dateStyle: "short",
-                          timeStyle: "short",
-                        }).format(new Date(item.createdAt))}
-                      </span>
-                    </header>
-                    <p className="whitespace-pre-line text-xl leading-tight">
-                      {item.content}
-                    </p>
-                  </article>
-                </div>
-              ))}
-              <div ref={scrollTargetRef}></div>
+            <div className="flex flex-col">
+              {messages
+                ? [
+                    ...messages.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex flex-row justify-start gap-2 p-1  hover:bg-black/10"
+                      >
+                        <Image
+                          src={item.user.image ?? "/inent.png"}
+                          alt={`${item.user.name}'s image`}
+                          width={40}
+                          height={40}
+                          className="h-10 w-10 rounded-full p-1"
+                        />
+                        <article key={item.id} className="w-full text-gray-50">
+                          <header className="flex justify-between text-sm">
+                            <div className="flex flex-row space-x-2 text-sm">
+                              <h3 className="text-base">{item.user.name}</h3>
+                              <span className="text-gray-500">
+                                {new Intl.DateTimeFormat("en-GB", {
+                                  dateStyle: "short",
+                                  timeStyle: "short",
+                                }).format(new Date(item.createdAt))}
+                              </span>
+                            </div>
+                            {(item.userId === room?.me?.userId ||
+                              room?.me?.role === "admin") && (
+                              <DeleteMessageForm messageId={item.id} />
+                            )}
+                          </header>
+                          <p className="text-md whitespace-pre-line leading-tight">
+                            {item.content}
+                          </p>
+                        </article>
+                      </div>
+                    )),
+                    <div ref={scrollTargetRef}></div>,
+                  ]
+                : []}
             </div>
           </div>
           <div className="w-full">

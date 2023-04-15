@@ -24,7 +24,9 @@ export function MyModal({
     <>
       <div className="flex items-center justify-center">
         {typeof button !== "string" ? (
-          cloneElement(button)
+          cloneElement(button, {
+            onClick: openModal,
+          })
         ) : (
           <button
             type="button"

@@ -5,8 +5,6 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { env } from "~/env.mjs";
 import { TRPCError } from "@trpc/server";
 
-console.log("Connected to Ably!");
-
 export const messageRouter = createTRPCRouter({
   infinite: protectedProcedure
     .input(
@@ -111,6 +109,45 @@ export const messageRouter = createTRPCRouter({
       var channel = client.channels.get(`roomId:${input.roomId}`);
 
       await channel.publish("new-message", message);
+      return message;
+    }),
+
+  delete: protectedProcedure
+    .input(z.string().cuid2())
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      const message = await ctx.prisma.message.findFirst({
+        where: {
+          id: input,
+        },
+        include: {
+          room: {
+            select: {
+              userRoom: {
+                select: {
+                  userId: true,
+                  role: true,
+                },
+                where: {
+                  userId,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (
+        message?.room?.userRoom[0]?.role !== "admin" &&
+        message?.userId !== userId
+      )
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+
+      await ctx.prisma.message.delete({
+        where: {
+          id: input,
+        },
+      });
     }),
 
   sendInitialDm: protectedProcedure
