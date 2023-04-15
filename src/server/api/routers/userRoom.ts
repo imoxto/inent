@@ -34,11 +34,18 @@ export const userRoomRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { roomId, userId } = input;
-      const userRoom = await ctx.prisma.userRoom.findUnique({
-        where: { roomId_userId: { roomId, userId } },
+      const userRooms = await ctx.prisma.userRoom.findMany({
+        where: { roomId },
+        select: { role: true, userId: true },
       });
-      if (userRoom?.role !== "admin")
+      const currentUserRoom = userRooms.find(
+        (u) => u.userId === ctx.session.user.id
+      );
+      const isAdmin = currentUserRoom?.role === "admin";
+      if (!isAdmin && userId !== ctx.session.user.id)
         throw new TRPCError({ code: "UNAUTHORIZED" });
+      if (userRooms.length === 1)
+        return ctx.prisma.room.delete({ where: { id: roomId } });
       return ctx.prisma.userRoom.delete({
         where: {
           roomId_userId: { roomId, userId },

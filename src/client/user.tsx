@@ -42,7 +42,7 @@ export const UserListMin: React.FC<{
   users: Pick<User, "id" | "name" | "image">[];
 }> = ({ users }) => {
   return (
-    <div>
+    <>
       {users.map((user) => (
         <UserCardMin
           key={user.id}
@@ -53,7 +53,7 @@ export const UserListMin: React.FC<{
           }}
         />
       ))}
-    </div>
+    </>
   );
 };
 

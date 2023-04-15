@@ -1,8 +1,8 @@
 import { useSession } from "next-auth/react";
 import { RouterOutputs, api } from "~/utils/api";
-import { UserListMin } from "./user";
+import { UserCardMin } from "./user";
 import Link from "next/link";
-import { UpdateRoomForm } from "./forms/roomForms";
+import { DeleteUserRoomForm, UpdateRoomForm } from "./forms/roomForms";
 import Image from "next/image";
 import { IoClipboardOutline } from "react-icons/io5";
 
@@ -61,7 +61,24 @@ export function ChatSideBar({ roomId }: { roomId: string }) {
               <article>
                 <h2 className="text-lg text-gray-200">Users</h2>
                 <ul className="space-y-2">
-                  <UserListMin users={allUsers} />
+                  {allUsers.map((user) => (
+                    <li className="flex flex-row items-center justify-between">
+                      <UserCardMin
+                        user={{
+                          id: user.id,
+                          name: user.name ?? null,
+                          image: user.image ?? null,
+                        }}
+                      />
+                      {(user.id === me?.id || room.me?.role === "admin") && (
+                        <DeleteUserRoomForm
+                          userId={user.id}
+                          roomId={roomId}
+                          onSuccess={() => utils.room.getMyRoom.invalidate()}
+                        />
+                      )}
+                    </li>
+                  ))}
                 </ul>
                 <div className="flex flex-row items-center justify-between">
                   <Link href="/">
