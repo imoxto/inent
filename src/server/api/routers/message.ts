@@ -5,6 +5,11 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { env } from "~/env.mjs";
 import { TRPCError } from "@trpc/server";
 
+const getAblyChannel = (roomId: string) => {
+  const client = new Ably.Rest(env.ABLY_API_KEY);
+  return client.channels.get(`roomId:${roomId}`);
+};
+
 export const messageRouter = createTRPCRouter({
   infinite: protectedProcedure
     .input(
@@ -94,29 +99,59 @@ export const messageRouter = createTRPCRouter({
           roomId: input.roomId,
           userId: ctx.session.user.id,
         },
-        include: {
-          user: {
-            select: {
-              name: true,
-              image: true,
-            },
-          },
+      });
+
+      getAblyChannel(input.roomId).publish("new-message", {
+        ...message,
+        user: {
+          name: ctx.session.user.name ?? null,
+          image: ctx.session.user.image ?? null,
+        },
+      });
+      return message;
+    }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        messageContent: z.string(),
+        messageId: z.string().cuid2(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      const message = await ctx.prisma.message.findUnique({
+        where: {
+          id: input.messageId,
         },
       });
 
-      const client = new Ably.Rest(env.ABLY_API_KEY);
+      if (message?.userId !== userId)
+        throw new TRPCError({ code: "UNAUTHORIZED" });
 
-      var channel = client.channels.get(`roomId:${input.roomId}`);
-
-      await channel.publish("new-message", message);
-      return message;
+      const updatedMassage = await ctx.prisma.message.update({
+        where: {
+          id: input.messageId,
+        },
+        data: {
+          content: input.messageContent,
+        },
+      });
+      getAblyChannel(message.roomId).publish("update-message", {
+        ...updatedMassage,
+        user: {
+          name: ctx.session.user.name ?? null,
+          image: ctx.session.user.image ?? null,
+        },
+      });
+      return updatedMassage;
     }),
 
   delete: protectedProcedure
     .input(z.string().cuid2())
     .mutation(async ({ input, ctx }) => {
       const userId = ctx.session.user.id;
-      const message = await ctx.prisma.message.findFirst({
+      const message = await ctx.prisma.message.findUnique({
         where: {
           id: input,
         },
@@ -143,11 +178,17 @@ export const messageRouter = createTRPCRouter({
       )
         throw new TRPCError({ code: "UNAUTHORIZED" });
 
-      await ctx.prisma.message.delete({
+      const deletedMessage = await ctx.prisma.message.delete({
         where: {
           id: input,
         },
+        select: { id: true },
       });
+      getAblyChannel(message.roomId).publish(
+        "delete-message",
+        deletedMessage.id
+      );
+      return deletedMessage;
     }),
 
   sendInitialDm: protectedProcedure

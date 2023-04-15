@@ -9,7 +9,11 @@ import { api } from "~/utils/api";
 import * as Ably from "ably/promises";
 import { configureAbly } from "@ably-labs/react-hooks";
 import { ChatSideBar } from "~/client/room";
-import { DeleteMessageForm, JoinRoomForm } from "~/client/forms/roomForms";
+import {
+  DeleteMessageForm,
+  JoinRoomForm,
+  UpdateMessageForm,
+} from "~/client/forms/roomForms";
 
 function AddMessageForm({
   onMessagePost,
@@ -150,6 +154,7 @@ export default function IndexPage() {
   type Post = NonNullable<typeof messages>[number];
   const scrollTargetRef = useRef<HTMLDivElement>(null);
   const { data: room } = api.room.getMyRoom.useQuery(roomId);
+  const isAdmin = room?.me?.role === "admin";
 
   // fn to add and dedupe new messages onto state
   const addMessages = useCallback((incoming?: Post[]) => {
@@ -166,6 +171,18 @@ export default function IndexPage() {
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
     });
+  }, []);
+
+  const removeMessage = useCallback((deleteMessageId: string) => {
+    setMessages((current) =>
+      current?.filter((msg) => msg.id !== deleteMessageId)
+    );
+  }, []);
+
+  const updateMessage = useCallback((message: Post) => {
+    setMessages((current) =>
+      current?.map((msg) => (msg.id !== message.id ? msg : message))
+    );
   }, []);
 
   // when new data from `useInfiniteQuery`, merge with current state
@@ -188,17 +205,6 @@ export default function IndexPage() {
     scrollToBottomOfList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // subscribe to new posts and add
-  // api.message.onAdd.useSubscription(roomId, {
-  //   onData(post) {
-  //     addMessages([post]);
-  //   },
-  //   onError(err) {
-  //     console.error("Subscription error:", err);
-  //     // we might have missed a message - invalidate cache
-  //     utils.message.infinite.invalidate();
-  //   },
-  // });
 
   useEffect(() => {
     if (!room?.id) {
@@ -216,7 +222,13 @@ export default function IndexPage() {
     const _channel = ably.channels.get(`roomId:${roomId}`);
     _channel.subscribe((data: Ably.Types.Message) => {
       // console.log(data);
-      addMessages([data.data]);
+      if (data.name === "new-message") {
+        addMessages([data.data]);
+      } else if (data.name === "delete-message") {
+        removeMessage(data.data);
+      } else if (data.name === "update-message") {
+        updateMessage(data.data);
+      }
     });
     // setChannel(_channel);
 
@@ -276,10 +288,18 @@ export default function IndexPage() {
                                 }).format(new Date(item.createdAt))}
                               </span>
                             </div>
-                            {(item.userId === room?.me?.userId ||
-                              room?.me?.role === "admin") && (
-                              <DeleteMessageForm messageId={item.id} />
-                            )}
+                            <div className="flex flex-row gap-2 text-sm">
+                              {item.userId === room?.me?.userId && (
+                                <UpdateMessageForm
+                                  messageId={item.id}
+                                  messageContent={item.content}
+                                />
+                              )}
+                              {(item.userId === room?.me?.userId ||
+                                isAdmin) && (
+                                <DeleteMessageForm messageId={item.id} />
+                              )}
+                            </div>
                           </header>
                           <p className="text-md whitespace-pre-line leading-tight">
                             {item.content}
@@ -304,12 +324,6 @@ export default function IndexPage() {
                   : ""} */}
             </p>
           </div>
-
-          {process.env.NODE_ENV !== "production" && (
-            <div className="hidden md:block">
-              <ReactQueryDevtools initialIsOpen={false} />
-            </div>
-          )}
         </section>
       </div>
     </div>
