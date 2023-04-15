@@ -9,9 +9,8 @@ export const UserRooms: React.FC<{
   return (
     <div>
       {userRooms.map(({ roomId, room }) => (
-        <Link href={`room/${roomId}`}>
+        <Link href={`room/${roomId}`} key={roomId}>
           <CardMin
-            key={roomId}
             content={{
               name: room.name ?? "Unnamed Chat",
               image: room.image ?? "/inent.png",

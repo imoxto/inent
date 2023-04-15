@@ -2,11 +2,10 @@ import { User } from "@prisma/client";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { RouterInputs, api } from "~/utils/api";
+import { api } from "~/utils/api";
 import { UserRooms } from "./userRoom";
 import { CardMin, SearchUserBar } from "./common/small";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { enqueueSnackbar } from "notistack";
+import { CreateRoomForm, JoinRoomForm } from "./forms/roomForms";
 
 export const UserDetails: React.FC<{
   user: Omit<User, "emailVerified" | "email">;
@@ -60,97 +59,23 @@ export const UserListMin: React.FC<{
 
 export const UserHomePage = () => {
   const { data: sessionData } = useSession();
-  const { data: helloSecuredMessage } = api.root.helloSecured.useQuery();
   const { data: userRooms, refetch: refetchUserRooms } =
     api.userRoom.getUserRooms.useQuery();
-  const {
-    register,
-    handleSubmit,
-    // watch,
-    // formState: { errors },
-  } = useForm();
-  const { mutateAsync, isLoading } = api.room.create.useMutation();
-
-  const onSubmit: SubmitHandler<RouterInputs["room"]["create"]> = (data) => {
-    mutateAsync(data, {
-      onError: (error) => enqueueSnackbar(error.message, { variant: "error" }),
-      onSuccess: () => {
-        enqueueSnackbar("Room created", { variant: "success" });
-      },
-      onSettled: () => refetchUserRooms(),
-    });
-  };
 
   if (!sessionData) {
     return null;
   }
   return (
     <div>
-      <div>
+      <div className="flex flex-col gap-3">
         <SearchUserBar />
+        <div className="flex flex-row gap-2">
+          <CreateRoomForm onSettled={() => refetchUserRooms()} />
+          <JoinRoomForm onSettled={() => refetchUserRooms()} />
+        </div>
         <UserRooms userRooms={userRooms ?? []} />
       </div>
-
-      <form
-        onSubmit={handleSubmit(onSubmit as any)}
-        className=" min-w-[400px] p-4"
-      >
-        <div className="group relative z-0 mb-6 w-full">
-          <input
-            type="text"
-            id="floating_text"
-            className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
-            placeholder=" "
-            required
-            {...register("name")}
-          />
-          <label className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500">
-            Name
-          </label>
-        </div>
-        <div className="group relative z-0 mb-6 w-full">
-          <input
-            type="text"
-            id="floating_text"
-            className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
-            placeholder=" "
-            {...register("description")}
-          />
-          <label className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500">
-            description
-          </label>
-        </div>
-
-        <div className="group relative z-0 mb-6 w-full">
-          <input
-            type="text"
-            id="floating_text"
-            className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
-            placeholder="image link"
-            {...register("description")}
-          />
-          <label className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500">
-            image
-          </label>
-        </div>
-
-        <select
-          id="countries"
-          className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-          disabled={isLoading}
-          {...register("visibility")}
-        >
-          <option>public</option>
-          <option>private</option>
-        </select>
-        <button
-          type="submit"
-          className="mt-2 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:w-auto"
-        >
-          Submit
-        </button>
-      </form>
-      <p>{helloSecuredMessage}</p>
     </div>
   );
 };
+

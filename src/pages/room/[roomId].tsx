@@ -1,6 +1,5 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { signIn, signOut, useSession } from "next-auth/react";
-import Head from "next/head";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { enqueueSnackbar } from "notistack";

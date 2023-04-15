@@ -5,6 +5,7 @@ import { useState } from "react";
 import { RouterOutputs, api } from "~/utils/api";
 import Link from "next/link";
 import { UserListMin } from "../user";
+import { useOutsideClick } from "../hooks";
 
 export const CardMin: React.FC<{
   content: Pick<User, "name" | "image">;
@@ -27,13 +28,13 @@ export const CardMin: React.FC<{
   );
 };
 
-type SearchBarProps = {
-  onSelectUser?: (
-    user: Pick<User, "id" | "username" | "name" | "image">
-  ) => void;
-};
+// type SearchBarProps = {
+//   onSelectUser?: (
+//     user: Pick<User, "id" | "username" | "name" | "image">
+//   ) => void;
+// };
 
-export const SearchUserBar: React.FC<SearchBarProps> = ({ onSelectUser }) => {
+export const SearchUserBar: React.FC = () => {
   const [query, setQuery] = useState("");
   const {
     isLoading,
@@ -52,16 +53,20 @@ export const SearchUserBar: React.FC<SearchBarProps> = ({ onSelectUser }) => {
     debouncedSetQuery();
   };
 
-  const handleUserSelect = (
-    user: Pick<User, "id" | "username" | "name" | "image">
-  ) => {
-    setQuery("");
-    removeUserSearch();
-    onSelectUser?.(user);
-  };
+  const ref = useOutsideClick(() => {
+    removeUserSearch(), setQuery("");
+  });
+
+  // const handleUserSelect = (
+  //   user: Pick<User, "id" | "username" | "name" | "image">
+  // ) => {
+  //   setQuery("");
+  //   removeUserSearch();
+  //   onSelectUser?.(user);
+  // };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={ref}>
       <input
         type="text"
         value={query}
@@ -70,9 +75,7 @@ export const SearchUserBar: React.FC<SearchBarProps> = ({ onSelectUser }) => {
         placeholder="Search for users..."
       />
       {query.length > 0 && (
-        <ul className="absolute z-10 w-full rounded-md border border-gray-300 bg-white  text-gray-900 shadow-lg">
-          <SearchResult searchData={searchData} isLoading={isLoading} />
-        </ul>
+        <SearchResult searchData={searchData} isLoading={isLoading} />
       )}
     </div>
   );
@@ -87,40 +90,41 @@ export function SearchResult({
 }) {
   if (isLoading) {
     return (
-      <div className="cursor-not-allowed px-4 py-2 text-gray-500">
-        Loading...
-      </div>
+      <ul className="absolute z-10 w-full rounded-md border border-gray-300 bg-white  text-gray-900 shadow-lg">
+        <div className="cursor-not-allowed px-4 py-2 text-gray-500">
+          Loading...
+        </div>
+      </ul>
     );
   } else if (
     !searchData ||
     (searchData.users.length === 0 && searchData.rooms.length === 0)
   ) {
-    return (
-      <div className="cursor-not-allowed px-4 py-2 text-gray-500">
-        No matching content found.
-      </div>
-    );
+    return null;
   }
   const { users, rooms } = searchData;
   return (
-    <div>
-      {users.length && (
-        <>
-          <h1>Users</h1>
-          <UserListMin users={searchData.users} />
-        </>
-      )}
+    <ul className="absolute z-10 w-full rounded-md border border-gray-300 bg-white  text-gray-900 shadow-lg">
+      <div>
+        {users.length > 0 && (
+          <>
+            <h1>Users</h1>
+            <UserListMin users={searchData.users} />
+          </>
+        )}
 
-      {rooms.length && (
-        <>
-          <h1>Rooms</h1>
-          {rooms.map((room) => (
-            <Link href={`/room/${room.id}`} key={room.id}>
-              <CardMin content={room} />
-            </Link>
-          ))}
-        </>
-      )}
-    </div>
+        {rooms.length > 0 && (
+          <>
+            <h1>Rooms</h1>
+            {rooms.map((room) => (
+              <Link href={`/room/${room.id}`} key={room.id}>
+                <CardMin content={room} />
+              </Link>
+            ))}
+          </>
+        )}
+      </div>
+    </ul>
   );
 }
+
