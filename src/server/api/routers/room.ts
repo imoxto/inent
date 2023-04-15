@@ -133,4 +133,27 @@ export const roomRouter = createTRPCRouter({
         },
       });
     }),
+
+  leave: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const room = await ctx.prisma.room.findFirst({
+        where: {
+          id: input,
+          userRoom: { some: { userId } },
+        },
+        include: { userRoom: { select: { userId: true, role: true } } },
+      });
+      if (!room) throw new TRPCError({ code: "UNAUTHORIZED" });
+      const admins = room.userRoom.filter((ur) => ur.role === "admin");
+      if (admins.length <= 1 && admins[0]?.userId === userId) {
+        return ctx.prisma.room.delete({
+          where: { id: room.id },
+        });
+      }
+      return ctx.prisma.userRoom.delete({
+        where: { roomId_userId: { roomId: room.id, userId } },
+      });
+    }),
 });

@@ -29,7 +29,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z
         .object({
-          name: z.string().nullable(),
+          name: z.string(),
           description: z.string().nullable(),
           username: z.string().nullable(),
           visibility: z.enum(["public", "private"]),

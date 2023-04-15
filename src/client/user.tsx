@@ -59,8 +59,7 @@ export const UserListMin: React.FC<{
 
 export const UserHomePage = () => {
   const { data: sessionData } = useSession();
-  const { data: userRooms, refetch: refetchUserRooms } =
-    api.userRoom.getUserRooms.useQuery();
+  const { data: userRooms } = api.userRoom.getUserRooms.useQuery();
 
   if (!sessionData) {
     return null;
@@ -70,8 +69,8 @@ export const UserHomePage = () => {
       <div className="flex flex-col gap-3">
         <SearchUserBar />
         <div className="flex flex-row gap-2">
-          <CreateRoomForm onSettled={() => refetchUserRooms()} />
-          <JoinRoomForm onSettled={() => refetchUserRooms()} />
+          <CreateRoomForm />
+          <JoinRoomForm />
         </div>
         <UserRooms userRooms={userRooms ?? []} />
       </div>

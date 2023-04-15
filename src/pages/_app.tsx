@@ -15,7 +15,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   const router = useRouter();
-  console.log("router", router.pathname);
 
   return (
     <SnackbarProvider>

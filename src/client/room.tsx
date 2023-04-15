@@ -19,14 +19,21 @@ function getUserFromRole(
 export function ChatSideBar({ roomId }: { roomId: string }) {
   const { data: session } = useSession();
   const { data: room, isLoading } = api.room.getMyRoom.useQuery(roomId);
+  const utils = api.useContext();
   const userName = session?.user?.name;
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex w-full flex-col bg-gray-800 md:w-72">Loading...</div>
+    );
   }
 
   if (!room) {
-    return <div>Room not found!</div>;
+    return (
+      <div className="flex w-full flex-col bg-gray-800 md:w-72">
+        Room not found!
+      </div>
+    );
   }
 
   const me = room.me ? getUserFromRole(room.me) : null;
@@ -60,11 +67,16 @@ export function ChatSideBar({ roomId }: { roomId: string }) {
                   <Link href="/">
                     <button>Home</button>
                   </Link>
-                  {room.me?.role === "admin" && <UpdateRoomForm room={room} />}
+                  {room.me?.role === "admin" && (
+                    <UpdateRoomForm
+                      room={room}
+                      onSettled={() => utils.room.getMyRoom.invalidate()}
+                    />
+                  )}
                 </div>
                 <div className="flex flex-col">
                   <p>Invite Code:</p>
-                  <div className="flex flex-row items-center">
+                  <div className="flex flex-row items-center gap-2">
                     <p>{room.inviteCode}</p>
                     <IoClipboardOutline
                       className="cursor-pointer"

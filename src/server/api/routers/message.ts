@@ -3,6 +3,7 @@ import * as Ably from "ably/promises";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { env } from "~/env.mjs";
+import { TRPCError } from "@trpc/server";
 
 console.log("Connected to Ably!");
 
@@ -16,6 +17,22 @@ export const messageRouter = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      const room = await ctx.prisma.room.findFirst({
+        where: {
+          id: input.roomId,
+          OR: [{ visibility: "public" }, { userRoom: { some: { userId } } }],
+        },
+        include: {
+          userRoom: {
+            select: {
+              userId: true,
+              role: true,
+            },
+          },
+        },
+      });
+      if (!room) throw new TRPCError({ code: "UNAUTHORIZED" });
       const take = input.take ?? 10;
       const cursor = input.cursor;
 
@@ -57,6 +74,22 @@ export const messageRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      const room = await ctx.prisma.room.findFirst({
+        where: {
+          id: input.roomId,
+          OR: [{ visibility: "public" }, { userRoom: { some: { userId } } }],
+        },
+        include: {
+          userRoom: {
+            select: {
+              userId: true,
+              role: true,
+            },
+          },
+        },
+      });
+      if (!room) throw new TRPCError({ code: "UNAUTHORIZED" });
       const message = await ctx.prisma.message.create({
         data: {
           content: input.messageContent,

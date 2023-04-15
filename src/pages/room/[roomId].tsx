@@ -9,13 +9,16 @@ import { api } from "~/utils/api";
 import * as Ably from "ably/promises";
 import { configureAbly } from "@ably-labs/react-hooks";
 import { ChatSideBar } from "~/client/room";
+import { JoinRoomForm } from "~/client/forms/roomForms";
 
 function AddMessageForm({
   onMessagePost,
   roomId,
+  disabled,
 }: {
   onMessagePost: () => void;
   roomId: string;
+  disabled?: boolean;
 }) {
   const addPost = api.message.create.useMutation();
   const { data: session } = useSession();
@@ -62,6 +65,13 @@ function AddMessageForm({
         </button>
       </div>
     );
+  }
+
+  if (disabled) {
+    <div className="flex w-full justify-between rounded bg-gray-800 px-3 py-2 text-lg text-gray-200">
+      <p className="font-bold">{"You have to join room to write"}</p>
+      <JoinRoomForm />
+    </div>;
   }
   return (
     <>
@@ -138,9 +148,8 @@ export default function IndexPage() {
   });
   // const [channel, setChannel] = useState<Ably.Types.RealtimeChannelPromise | null>(null)
   type Post = NonNullable<typeof messages>[number];
-  const { data: session } = useSession();
-  const userName = session?.user?.name;
   const scrollTargetRef = useRef<HTMLDivElement>(null);
+  const { data: room } = api.room.getMyRoom.useQuery(roomId);
 
   // fn to add and dedupe new messages onto state
   const addMessages = useCallback((incoming?: Post[]) => {
@@ -192,7 +201,7 @@ export default function IndexPage() {
   // });
 
   useEffect(() => {
-    if (!roomId) {
+    if (!room?.id) {
       return;
     }
 
@@ -214,7 +223,7 @@ export default function IndexPage() {
     return () => {
       _channel.unsubscribe();
     };
-  }, [roomId]);
+  }, [room?.id]);
 
   // const [currentlyTyping, setCurrentlyTyping] = useState<string[]>([]);
   // api.post.whoIsTyping.useSubscription(undefined, {
@@ -272,6 +281,7 @@ export default function IndexPage() {
           </div>
           <div className="w-full">
             <AddMessageForm
+              disabled={!room}
               roomId={roomId}
               onMessagePost={() => scrollToBottomOfList()}
             />

@@ -13,6 +13,8 @@ export const CreateRoomForm = ({ onSettled }: { onSettled?: () => void }) => {
   const { mutateAsync: createRoom, isLoading: isCreatingRoom } =
     api.room.create.useMutation();
 
+  const utils = api.useContext();
+
   const onSubmitCreateGroupFrom: SubmitHandler<
     RouterInputs["room"]["create"]
   > = (data) => {
@@ -21,7 +23,10 @@ export const CreateRoomForm = ({ onSettled }: { onSettled?: () => void }) => {
       onSuccess: () => {
         enqueueSnackbar("Room created", { variant: "success" });
       },
-      onSettled,
+      onSettled: () => {
+        onSettled?.();
+        utils.userRoom.getUserRooms.invalidate();
+      },
     });
   };
   return (
@@ -132,6 +137,7 @@ export const UpdateRoomForm = ({
   });
   const { mutateAsync: updateRoom, isLoading: isUpdatingRoom } =
     api.room.update.useMutation();
+  const utils = api.useContext();
 
   const onSubmitCreateGroupFrom: SubmitHandler<
     RouterInputs["room"]["update"]
@@ -144,7 +150,10 @@ export const UpdateRoomForm = ({
         onSuccess: () => {
           enqueueSnackbar("Room updated", { variant: "success" });
         },
-        onSettled,
+        onSettled: () => {
+          onSettled?.();
+          utils.userRoom.getUserRooms.invalidate();
+        },
       }
     );
   };
@@ -241,6 +250,8 @@ export const JoinRoomForm = ({ onSettled }: { onSettled?: () => void }) => {
     // formState: { errors },
   } = useForm();
 
+  const utils = api.useContext();
+
   const { mutateAsync: joinRoom, isLoading: isJoiningRoom } =
     api.room.join.useMutation();
 
@@ -252,7 +263,10 @@ export const JoinRoomForm = ({ onSettled }: { onSettled?: () => void }) => {
       onSuccess: () => {
         enqueueSnackbar("Room created", { variant: "success" });
       },
-      onSettled,
+      onSettled: () => {
+        utils.room.getMyRoom.invalidate();
+        onSettled?.();
+      },
     });
   };
   return (
