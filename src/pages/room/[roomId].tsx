@@ -7,6 +7,9 @@ import { enqueueSnackbar } from "notistack";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "~/utils/api";
 
+import * as Ably from "ably/promises";
+import { configureAbly } from "@ably-labs/react-hooks";
+
 function AddMessageForm({
   onMessagePost,
   roomId,
@@ -133,6 +136,7 @@ export default function IndexPage() {
     const msgs = postsQuery.data?.pages.map((page) => page.items).flat();
     return msgs;
   });
+  // const [channel, setChannel] = useState<Ably.Types.RealtimeChannelPromise | null>(null)
   type Post = NonNullable<typeof messages>[number];
   const { data: session } = useSession();
   const userName = session?.user?.name;
@@ -149,7 +153,8 @@ export default function IndexPage() {
         map[msg.id] = msg;
       }
       return Object.values(map).sort(
-        (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
     });
   }, []);
@@ -175,18 +180,43 @@ export default function IndexPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // subscribe to new posts and add
-  // api.post.onAdd.useSubscription(undefined, {
+  // api.message.onAdd.useSubscription(roomId, {
   //   onData(post) {
   //     addMessages([post]);
   //   },
   //   onError(err) {
   //     console.error("Subscription error:", err);
   //     // we might have missed a message - invalidate cache
-  //     utils.post.infinite.invalidate();
+  //     utils.message.infinite.invalidate();
   //   },
   // });
 
-  const [currentlyTyping, setCurrentlyTyping] = useState<string[]>([]);
+  useEffect(() => {
+    if (!roomId) {
+      return;
+    }
+
+    const ably: Ably.Types.RealtimePromise = configureAbly({
+      authUrl: "/api/authentication/token-auth",
+    });
+
+    ably.connection.on((stateChange: Ably.Types.ConnectionStateChange) => {
+      console.log(stateChange);
+    });
+
+    const _channel = ably.channels.get(`roomId:${roomId}`);
+    _channel.subscribe((data: Ably.Types.Message) => {
+      console.log(data);
+      addMessages([data.data]);
+    });
+    // setChannel(_channel);
+
+    return () => {
+      _channel.unsubscribe();
+    };
+  }, [roomId]);
+
+  // const [currentlyTyping, setCurrentlyTyping] = useState<string[]>([]);
   // api.post.whoIsTyping.useSubscription(undefined, {
   //   onData(data) {
   //     setCurrentlyTyping(data);
@@ -286,7 +316,7 @@ export default function IndexPage() {
                           {new Intl.DateTimeFormat("en-GB", {
                             dateStyle: "short",
                             timeStyle: "short",
-                          }).format(item.createdAt)}
+                          }).format(new Date(item.createdAt))}
                         </span>
                       </header>
                       <p className="whitespace-pre-line text-xl leading-tight">
@@ -304,9 +334,9 @@ export default function IndexPage() {
                 onMessagePost={() => scrollToBottomOfList()}
               />
               <p className="h-2 italic text-gray-400">
-                {currentlyTyping.length
+                {/* {currentlyTyping.length
                   ? `${currentlyTyping.join(", ")} typing...`
-                  : ""}
+                  : ""} */}
               </p>
             </div>
 

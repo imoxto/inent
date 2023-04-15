@@ -1,6 +1,10 @@
 import { z } from "zod";
+import * as Ably from "ably/promises";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { env } from "~/env.mjs";
+
+console.log("Connected to Ably!");
 
 export const messageRouter = createTRPCRouter({
   infinite: protectedProcedure
@@ -53,13 +57,27 @@ export const messageRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      return ctx.prisma.message.create({
+      const message = await ctx.prisma.message.create({
         data: {
           content: input.messageContent,
           roomId: input.roomId,
           userId: ctx.session.user.id,
         },
+        include: {
+          user: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+        },
       });
+
+      const client = new Ably.Rest(env.ABLY_API_KEY);
+
+      var channel = client.channels.get(`roomId:${input.roomId}`);
+
+      await channel.publish("new-message", message);
     }),
 
   sendInitialDm: protectedProcedure
