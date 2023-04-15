@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@ably-labs/react-hooks@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@ably-labs/react-hooks/-/react-hooks-2.1.1.tgz#017f07cbe93ff214b08a4815bdce926ff6918365"
+  integrity sha512-Bunqu9GDFInZLpFMfWhUboU1g4W5UXzDfeAqI9ueNIF3p9KIMS7LfgjKBfXsC0DtAWkBgCjL22PvNToiHP92Ig==
+  dependencies:
+    ably "^1.2.27"
+
 "@ably/msgpack-js@^0.4.0":
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/@ably/msgpack-js/-/msgpack-js-0.4.0.tgz#aaaf5d8dffacf7aa253effd8c3488aa09130e6a2"
@@ -454,7 +461,7 @@
     "@typescript-eslint/types" "5.53.0"
     eslint-visitor-keys "^3.3.0"
 
-ably@^1.2.39:
+ably@^1.2.27, ably@^1.2.39:
   version "1.2.39"
   resolved "https://registry.yarnpkg.com/ably/-/ably-1.2.39.tgz#a5877e8394228a2747236265aa2f36773e73ccc5"
   integrity sha512-xL57mIHGZsdJlgQv2DqZUFxgvh3QmUZOOZioP4dBbzCu6hgnoTlWHiZT40uwr0D8/OpAyvhidjhoVcqMk3TIAQ==
