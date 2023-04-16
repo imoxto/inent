@@ -28,7 +28,7 @@ export const rootRouter = createTRPCRouter({
     });
     const rooms = await ctx.prisma.room.findMany({
       select: { id: true, name: true, image: true },
-      where: { name: { search: input } },
+      where: { name: { search: input }, type: "group" },
 
       take: 5,
     });

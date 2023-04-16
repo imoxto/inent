@@ -7,6 +7,7 @@ import { UserRooms } from "./userRoom";
 import { CardMin, SearchUserBar } from "./common/small";
 import {
   CreateRoomForm,
+  DMUserButtom,
   JoinRoomForm,
   UpdateUserForm,
 } from "./forms/roomForms";
@@ -41,7 +42,11 @@ export const UserDetails: React.FC<{
         <Link href="/">
           <button>Home</button>
         </Link>
-        {user.id === session?.user?.id && <UpdateUserForm />}
+        {user.id === session?.user?.id ? (
+          <UpdateUserForm />
+        ) : (
+          <DMUserButtom userId={user.id} />
+        )}
       </div>
     </div>
   );
@@ -87,7 +92,7 @@ export const UserHomePage = () => {
     <div>
       <div className="flex flex-col gap-3">
         <SearchUserBar />
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row items-center justify-between gap-2">
           <CreateRoomForm />
           <JoinRoomForm />
         </div>

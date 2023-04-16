@@ -15,7 +15,7 @@ export const userRoomRouter = createTRPCRouter({
     .input(
       z.object({
         roomId: z.string().cuid2(),
-        userId: z.string().cuid2(),
+        userId: z.string(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -29,7 +29,7 @@ export const userRoomRouter = createTRPCRouter({
     .input(
       z.object({
         roomId: z.string().cuid2(),
-        userId: z.string().cuid2(),
+        userId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -57,7 +57,7 @@ export const userRoomRouter = createTRPCRouter({
     .input(
       z.object({
         roomId: z.string().cuid2(),
-        userId: z.string().cuid2(),
+        userId: z.string(),
         role: z.enum(["admin", "member"]),
       })
     )
@@ -77,39 +77,5 @@ export const userRoomRouter = createTRPCRouter({
         where: { roomId_userId: { roomId, userId } },
         data: { role },
       });
-    }),
-
-  invitePerson: protectedProcedure
-    .input(
-      z
-        .object({
-          roomId: z.string().cuid2(),
-          userId: z.string().cuid2(),
-        })
-        .strict()
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { roomId, userId } = input;
-      const userRoom = ctx.prisma.userRoom.create({
-        data: { roomId, userId, inviterId: ctx.session.user.id },
-      });
-      return userRoom;
-    }),
-
-  acceptInvite: protectedProcedure
-    .input(
-      z
-        .object({
-          roomId: z.string().cuid2(),
-        })
-        .strict()
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { roomId } = input;
-      const userRoom = ctx.prisma.userRoom.update({
-        data: { role: "member" },
-        where: { roomId_userId: { roomId, userId: ctx.session.user.id } },
-      });
-      return userRoom;
     }),
 });

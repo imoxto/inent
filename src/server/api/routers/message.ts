@@ -4,6 +4,7 @@ import * as Ably from "ably/promises";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { env } from "~/env.mjs";
 import { TRPCError } from "@trpc/server";
+import { cgptRequest } from "~/server/external/cgpt";
 
 const getAblyChannel = (roomId: string) => {
   const client = new Ably.Rest(env.ABLY_API_KEY);
@@ -36,6 +37,7 @@ export const messageRouter = createTRPCRouter({
         },
       });
       if (!room) throw new TRPCError({ code: "UNAUTHORIZED" });
+
       const take = input.take ?? 10;
       const cursor = input.cursor;
 
@@ -108,6 +110,39 @@ export const messageRouter = createTRPCRouter({
           image: ctx.session.user.image ?? null,
         },
       });
+
+      const aiReciever = room.userRoom.find(
+        (ur) => ur.userId === "Ai-chatbot-v0"
+      );
+      if (aiReciever) {
+        cgptRequest(input.messageContent)
+          .then((res) => {
+            if (!res.data.choices[0]?.message.content) {
+              return;
+            }
+            ctx.prisma.message
+              .create({
+                data: {
+                  content: res.data.choices[0]?.message.content,
+                  roomId: input.roomId,
+                  userId: aiReciever.userId,
+                },
+              })
+              .then((message) => {
+                getAblyChannel(input.roomId).publish("new-message", {
+                  ...message,
+                  user: {
+                    name: "AI chatbot v0",
+                    image: "/cute_robot.webp",
+                  },
+                });
+              });
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
+
       return message;
     }),
 
@@ -189,43 +224,5 @@ export const messageRouter = createTRPCRouter({
         deletedMessage.id
       );
       return deletedMessage;
-    }),
-
-  sendInitialDm: protectedProcedure
-    .input(
-      z.object({
-        messageContent: z.string(),
-        targetUserId: z.string().cuid2(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const currentUserId = ctx.session.user.id;
-      const room = await ctx.prisma.room.create({
-        data: {
-          name: "DM",
-          userRoom: {
-            create: {
-              userId: currentUserId,
-              inviterId: currentUserId,
-              role: "admin",
-            },
-          },
-        },
-      });
-      await ctx.prisma.userRoom.create({
-        data: {
-          roomId: room.id,
-          userId: input.targetUserId,
-          inviterId: currentUserId,
-        },
-      });
-
-      return ctx.prisma.message.create({
-        data: {
-          content: input.messageContent,
-          roomId: room.id,
-          userId: ctx.session.user.id,
-        },
-      });
     }),
 });

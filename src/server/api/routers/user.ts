@@ -10,7 +10,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z
         .object({
-          userId: z.string().cuid2(),
+          userId: z.string(),
         })
         .strict()
     )

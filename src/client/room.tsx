@@ -96,18 +96,20 @@ export function ChatSideBar({ roomId }: { roomId: string }) {
                     />
                   )}
                 </div>
-                <div className="flex flex-col">
-                  <p>Invite Code:</p>
-                  <div className="flex flex-row items-center gap-2">
-                    <p>{room.inviteCode}</p>
-                    <IoClipboardOutline
-                      className="cursor-pointer"
-                      onClick={() =>
-                        navigator.clipboard.writeText(room.inviteCode)
-                      }
-                    />
+                {room.type === "group" && (
+                  <div className="flex flex-col">
+                    <p>Invite Code:</p>
+                    <div className="flex flex-row items-center gap-2">
+                      <p>{room.inviteCode}</p>
+                      <IoClipboardOutline
+                        className="cursor-pointer"
+                        onClick={() =>
+                          navigator.clipboard.writeText(room.inviteCode)
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </article>
             )}
           </div>

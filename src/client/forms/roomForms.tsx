@@ -2,7 +2,11 @@ import { enqueueSnackbar } from "notistack";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { api, RouterInputs } from "~/utils/api";
 import { MyModal } from "../common/myModal";
-import { MdOutlineDeleteOutline, MdEditNote } from "react-icons/md";
+import {
+  MdOutlineDeleteOutline,
+  MdEditNote,
+  MdOutlineMessage,
+} from "react-icons/md";
 import { UserRoomRole } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -645,5 +649,36 @@ export function UpdateUserForm() {
         );
       }}
     </MyModal>
+  );
+}
+
+export function DMUserButtom({ userId }: { userId: string }) {
+  const { data: session } = useSession();
+
+  const router = useRouter();
+
+  const { mutateAsync: createDM } = api.room.createDM.useMutation({
+    onError: (error) => enqueueSnackbar(error.message, { variant: "error" }),
+    onSuccess: (data) => {
+      enqueueSnackbar("Created DM", {
+        variant: "success",
+      });
+      router.push(`/room/${data.id}`);
+    },
+  });
+
+  if (!session) return null;
+
+  if (session?.user.id === userId) return null;
+
+  return (
+    <button
+      onClick={() => {
+        createDM(userId);
+      }}
+      className="w-full rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:w-auto"
+    >
+      <MdOutlineMessage />
+    </button>
   );
 }

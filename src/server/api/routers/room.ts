@@ -115,8 +115,8 @@ export const roomRouter = createTRPCRouter({
     .input(z.string())
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const room = await ctx.prisma.room.findUnique({
-        where: { inviteCode: input },
+      const room = await ctx.prisma.room.findFirst({
+        where: { inviteCode: input, type: "group" },
         include: { userRoom: true },
       });
       if (!room) throw new TRPCError({ code: "NOT_FOUND" });
@@ -147,7 +147,10 @@ export const roomRouter = createTRPCRouter({
       });
       if (!room) throw new TRPCError({ code: "UNAUTHORIZED" });
       const admins = room.userRoom.filter((ur) => ur.role === "admin");
-      if (admins.length <= 1 && admins[0]?.userId === userId) {
+      if (
+        (admins.length <= 1 && admins[0]?.userId === userId) ||
+        room.type === "dm"
+      ) {
         return ctx.prisma.room.delete({
           where: { id: room.id },
         });
@@ -155,5 +158,46 @@ export const roomRouter = createTRPCRouter({
       return ctx.prisma.userRoom.delete({
         where: { roomId_userId: { roomId: room.id, userId } },
       });
+    }),
+
+  createDM: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      if (userId === input) throw new TRPCError({ code: "BAD_REQUEST" });
+      const [user1, user2, currentRoom] = await ctx.prisma.$transaction([
+        ctx.prisma.user.findUnique({ where: { id: userId } }),
+        ctx.prisma.user.findUnique({ where: { id: input } }),
+        ctx.prisma.room.findFirst({
+          where: {
+            type: "dm",
+            visibility: "private",
+            userRoom: {
+              every: {
+                userId: {
+                  in: [userId, input],
+                },
+              },
+            },
+          },
+        }),
+      ]);
+      if (!user1 || !user2) throw new TRPCError({ code: "NOT_FOUND" });
+      if (currentRoom) return currentRoom;
+
+      const room = await ctx.prisma.room.create({
+        data: {
+          name: `DM: ${user1.name} & ${user2.name}`,
+          type: "dm",
+          userRoom: {
+            create: [
+              { userId, inviterId: userId, role: "admin" },
+              { userId: input, inviterId: userId, role: "admin" },
+            ],
+          },
+          visibility: "private",
+        },
+      });
+      return room;
     }),
 });

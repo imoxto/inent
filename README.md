@@ -26,7 +26,9 @@ The following requirements are fullfilled by this project:
   - users can join rooms
   - user can create rooms
   - users can update rooms
+  - can create private DM rooms with only 1 user
   - can see his joined or created rooms
+  - should not see private rooms if he doesnt have member or admin access
   - persist changes in database
 
 - Messaging
