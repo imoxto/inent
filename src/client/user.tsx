@@ -5,13 +5,19 @@ import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 import { UserRooms } from "./userRoom";
 import { CardMin, SearchUserBar } from "./common/small";
-import { CreateRoomForm, JoinRoomForm } from "./forms/roomForms";
+import {
+  CreateRoomForm,
+  JoinRoomForm,
+  UpdateUserForm,
+} from "./forms/roomForms";
+import { MdLockOutline, MdOutlineGroup } from "react-icons/md";
 
 export const UserDetails: React.FC<{
   user: Omit<User, "emailVerified" | "email">;
 }> = ({ user }) => {
+  const { data: session } = useSession();
   return (
-    <div className="flex flex-row items-center gap-2 rounded p-2 hover:bg-white/5">
+    <div className="flex w-[400px] flex-col items-center gap-6 p-2">
       <Image
         className="rounded-full"
         src={user.image || "/favicon.ico"}
@@ -19,10 +25,23 @@ export const UserDetails: React.FC<{
         width={60}
         height={60}
       />
-      <div className="flex-column ">
-        {user.username && <h1>{user.username}</h1>}
-        {user.name && <p>{user.name}</p>}
-        {user.description && <p>{user.description}</p>}
+      <div className="flex w-full flex-col gap-2">
+        {user.name && <h1 className="text-lg font-bold">{user.name}</h1>}
+        {user.description && <p className="text-sm">{user.description}</p>}
+        <div className="flex flex-row items-center gap-2">
+          {user.visibility === "public" ? (
+            <MdOutlineGroup />
+          ) : (
+            <MdLockOutline />
+          )}
+          <p className="text-sm text-gray-400">{`${user.visibility} profile`}</p>
+        </div>
+      </div>
+      <div className="flex w-full flex-row items-center justify-between gap-2">
+        <Link href="/">
+          <button>Home</button>
+        </Link>
+        {user.id === session?.user?.id && <UpdateUserForm />}
       </div>
     </div>
   );

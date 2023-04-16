@@ -8,6 +8,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
+import { Visibility } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -20,6 +21,8 @@ declare module "next-auth" {
     user: {
       id: string;
       username?: string;
+      description?: string;
+      visibility?: Visibility;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -27,6 +30,8 @@ declare module "next-auth" {
 
   interface User {
     username?: string;
+    description?: string;
+    visibility?: Visibility;
     // ...other properties
     // role: UserRole;
   }
@@ -43,6 +48,10 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = user.id;
         session.user.username = user.username;
+        session.user.name = user.name;
+        session.user.image = user.image;
+        session.user.description = user.description;
+        session.user.visibility = user.visibility;
         // session.user.role = user.role; <-- put other properties on the session here
       }
       return session;

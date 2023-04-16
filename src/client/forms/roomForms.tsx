@@ -4,6 +4,8 @@ import { api, RouterInputs } from "~/utils/api";
 import { MyModal } from "../common/myModal";
 import { MdOutlineDeleteOutline, MdEditNote } from "react-icons/md";
 import { UserRoomRole } from "@prisma/client";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export const CreateRoomForm = ({ onSettled }: { onSettled?: () => void }) => {
   const {
@@ -543,3 +545,105 @@ export function UpdateUserRoomForm({
   );
 }
 
+export function UpdateUserForm() {
+  const { data: session } = useSession();
+  const {
+    register,
+    handleSubmit,
+    // watch,
+    // formState: { errors },
+  } = useForm({
+    defaultValues: {
+      name: session?.user.name,
+      image: session?.user.image,
+      description: session?.user.description,
+      visibility: session?.user.visibility,
+    },
+  });
+
+  const { mutateAsync: updateUser, isLoading: isUpdatingUser } =
+    api.user.update.useMutation({
+      onError: (error) => enqueueSnackbar(error.message, { variant: "error" }),
+      onSuccess: () => {
+        enqueueSnackbar("Updated User", {
+          variant: "success",
+        });
+      },
+    });
+
+  const router = useRouter();
+
+  const onSubmitUpdateUser: SubmitHandler<RouterInputs["user"]["update"]> = (
+    data
+  ) => {
+    updateUser(data);
+  };
+
+  return (
+    <MyModal button={"Update Your Profile"}>
+      {({ closeModal }) => {
+        return (
+          <form
+            onSubmit={handleSubmit((data) => {
+              onSubmitUpdateUser(data as any);
+              closeModal();
+              router.reload();
+            })}
+            className=" min-w-[400px] p-4"
+          >
+            <div className="group relative z-0 mb-6 w-full">
+              <input
+                type="text"
+                className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                {...register("name")}
+              />
+              <label className="absolute top-1 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500">
+                Name
+              </label>
+            </div>
+            <div className="group relative z-0 mb-6 w-full">
+              <input
+                type="text"
+                id="floating_text"
+                className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
+                placeholder=" "
+                {...register("image")}
+              />
+              <label className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500">
+                Image link
+              </label>
+            </div>
+
+            <div className="group relative z-0 mb-6 w-full">
+              <textarea
+                id="floating_text"
+                rows={3}
+                className="block w-full resize-none rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                {...register("description")}
+              />
+              <label className="absolute top-1 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500">
+                description
+              </label>
+            </div>
+
+            <select
+              id="select-input"
+              className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              {...register("visibility")}
+            >
+              <option>public</option>
+              <option>private</option>
+            </select>
+            <button
+              type="submit"
+              disabled={isUpdatingUser}
+              className="mt-2 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:w-auto"
+            >
+              Submit
+            </button>
+          </form>
+        );
+      }}
+    </MyModal>
+  );
+}

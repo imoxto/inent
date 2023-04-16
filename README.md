@@ -1,12 +1,10 @@
 # Inent
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+This is a full stack realtime messaging web-app project.
 
-## What's next? How do I make an app with this?
+## Tech Stack
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
-
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+It uses the following tools and technologies:
 
 - [Next.js](https://nextjs.org)
 - [NextAuth.js](https://next-auth.js.org)
@@ -14,14 +12,45 @@ If you are not familiar with the different technologies used in this project, pl
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
 
-## Learn More
+## Requirements
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+The following requirements are fullfilled by this project:
+- User
+  - can search for user
+  - can search for rooms (messaging groups or rooms)
+  - can see user profiles if they are public
+  - can update their information
+  - persist changes in database
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- Rooms
+  - users can join rooms
+  - user can create rooms
+  - users can update rooms
+  - can see his joined or created rooms
+  - persist changes in database
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+- Messaging
+  - users can create messages
+  - users can delete their own messages
+  - admins can delete any messages of a room
+  - users can update their own messages
+  - users can see messages in the room
+  - persist changes in database
+
+- User-Room role
+  - users are admins when they create room
+  - users are members when they join a room
+  - both admin and members can leave a room
+  - admins can change the role of a member
+  - admins can remove any member from a room
+  - persist changes in database
+
+- Realtime communication system
+  - adding a new message should be multicasted to all members of a room
+  - updating a message should be multicasted to all members of a room
+  - deleting a message should be multicasted to all members of a room
+  - user-room roles should be followed while multicasting
+
 
 ## How do I deploy this?
 
