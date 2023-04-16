@@ -3,6 +3,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { api, RouterInputs } from "~/utils/api";
 import { MyModal } from "../common/myModal";
 import { MdOutlineDeleteOutline, MdEditNote } from "react-icons/md";
+import { UserRoomRole } from "@prisma/client";
 
 export const CreateRoomForm = ({ onSettled }: { onSettled?: () => void }) => {
   const {
@@ -94,7 +95,7 @@ export const CreateRoomForm = ({ onSettled }: { onSettled?: () => void }) => {
             </div>
 
             <select
-              id="countries"
+              id="select-input"
               className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
               {...register("visibility")}
             >
@@ -222,7 +223,7 @@ export const UpdateRoomForm = ({
             </div>
 
             <select
-              id="countries"
+              id="select-input"
               className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
               {...register("visibility")}
             >
@@ -448,59 +449,97 @@ export function UpdateMessageForm({
   );
 }
 
-export function DeleteUserRoomForm({
+export function UpdateUserRoomForm({
   userId,
   roomId,
+  role,
+  isSelfAndNotAdmin,
   onSuccess,
 }: {
   userId: string;
   roomId: string;
+  isSelfAndNotAdmin?: boolean;
+  role: string;
   onSuccess?: () => void;
 }) {
+  const {
+    register,
+    handleSubmit,
+    // watch,
+    // formState: { errors },
+  } = useForm({
+    defaultValues: {
+      role,
+    },
+  });
+
   const { mutateAsync: deleteRoom, isLoading: isDeletingRoom } =
     api.userRoom.remove.useMutation({
       onError: (error) => enqueueSnackbar(error.message, { variant: "error" }),
       onSuccess: () => {
-        enqueueSnackbar("Room deleted", {
+        enqueueSnackbar("Removed User from Room", {
           variant: "success",
         });
         onSuccess?.();
       },
     });
+
+  const { mutateAsync: updateRoom, isLoading: isUpdatingUserRoom } =
+    api.userRoom.update.useMutation({
+      onError: (error) => enqueueSnackbar(error.message, { variant: "error" }),
+      onSuccess: () => {
+        enqueueSnackbar("Updated User of Room", {
+          variant: "success",
+        });
+        onSuccess?.();
+      },
+    });
+
+  const onSubmitUpdateRoom: SubmitHandler<{ role: UserRoomRole }> = (data) => {
+    updateRoom({ userId, roomId, role: data.role });
+  };
+
   return (
-    <MyModal
-      button={<MdOutlineDeleteOutline className="cursor-pointer" color="red" />}
-    >
+    <MyModal button={<MdEditNote className="cursor-pointer text-blue-400 " />}>
       {({ closeModal }) => {
         return (
-          <div className="p-4">
-            <p className="text-lg font-medium text-gray-300">
-              Delete User from Room
-            </p>
-            <p className="text-sm text-gray-500">
-              Are you sure you want to delete access of this user from the room?
-            </p>
-            <div className="mt-4 flex justify-end">
-              <button
-                className="mr-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:ring-blue-800"
-                onClick={closeModal}
+          <form
+            onSubmit={handleSubmit((data) => {
+              if (data.role === "remove") {
+                deleteRoom({ userId, roomId });
+              } else {
+                onSubmitUpdateRoom(data as any);
+              }
+              closeModal();
+            })}
+            className=" min-w-[400px] p-4"
+          >
+            <div className="group relative z-0 mb-6 w-full">
+              <select
+                id="select-input"
+                className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                {...register("role")}
               >
-                Cancel
-              </button>
-              <button
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-blue-800"
-                onClick={async () => {
-                  await deleteRoom({ userId, roomId });
-                  closeModal();
-                }}
-                disabled={isDeletingRoom}
-              >
-                Delete
-              </button>
+                <option disabled={isSelfAndNotAdmin}>admin</option>
+                <option>member</option>
+                <option className="bg-red-700">remove</option>
+              </select>
+              <label className="absolute top-1 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500">
+                Role
+              </label>
             </div>
-          </div>
+
+            <button
+              type="submit"
+              disabled={isUpdatingUserRoom || isDeletingRoom}
+              className="mt-2 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:w-auto"
+            >
+              Submit
+            </button>
+          </form>
         );
       }}
     </MyModal>
   );
 }
+

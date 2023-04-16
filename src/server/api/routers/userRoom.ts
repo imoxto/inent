@@ -53,6 +53,32 @@ export const userRoomRouter = createTRPCRouter({
       });
     }),
 
+  update: protectedProcedure
+    .input(
+      z.object({
+        roomId: z.string().cuid2(),
+        userId: z.string().cuid2(),
+        role: z.enum(["admin", "member"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { roomId, userId, role } = input;
+      const userRooms = await ctx.prisma.userRoom.findMany({
+        where: { roomId },
+        select: { role: true, userId: true },
+      });
+      const currentUserRoom = userRooms.find(
+        (u) => u.userId === ctx.session.user.id
+      );
+      const isAdmin = currentUserRoom?.role === "admin";
+      if (!isAdmin && userId !== ctx.session.user.id)
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      return ctx.prisma.userRoom.update({
+        where: { roomId_userId: { roomId, userId } },
+        data: { role },
+      });
+    }),
+
   invitePerson: protectedProcedure
     .input(
       z

@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react";
 import { RouterOutputs, api } from "~/utils/api";
 import { UserCardMin } from "./user";
 import Link from "next/link";
-import { DeleteUserRoomForm, UpdateRoomForm } from "./forms/roomForms";
+import { UpdateRoomForm, UpdateUserRoomForm } from "./forms/roomForms";
 import Image from "next/image";
 import { IoClipboardOutline } from "react-icons/io5";
 
@@ -13,6 +13,7 @@ function getUserFromRole(
     id: userRooms.userId,
     name: userRooms.user.name,
     image: userRooms.user.image,
+    role: userRooms.role,
   };
 }
 
@@ -71,10 +72,14 @@ export function ChatSideBar({ roomId }: { roomId: string }) {
                         }}
                       />
                       {(user.id === me?.id || room.me?.role === "admin") && (
-                        <DeleteUserRoomForm
+                        <UpdateUserRoomForm
                           userId={user.id}
                           roomId={roomId}
+                          role={user.role}
                           onSuccess={() => utils.room.getMyRoom.invalidate()}
+                          isSelfAndNotAdmin={
+                            user.id === me?.id && user.role !== "admin"
+                          }
                         />
                       )}
                     </li>
