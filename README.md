@@ -22,6 +22,11 @@ The following requirements are fullfilled by this project:
   - can update their information
   - persist changes in database
 
+- Special user named `AI chatbot v0`
+  - can communicate only in DMs
+  - follows regular DM rules
+  - cant join groups
+
 - Rooms
   - users can join rooms
   - user can create rooms
