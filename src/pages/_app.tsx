@@ -9,6 +9,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Navbar } from "~/client/common/nav";
 import { useRouter } from "next/router";
 import { SnackbarProvider } from "notistack";
+import { Seo } from "~/client/Seo";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -18,6 +19,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 
   return (
     <SnackbarProvider>
+      <Seo />
       <SessionProvider session={session}>
         <main className="flex min-h-screen flex-col items-center justify-start bg-gray-900 text-white">
           {router.pathname !== "/room/[roomId]" && <Navbar />}

@@ -51,7 +51,8 @@ model User {
     visibility    Visibility @default(public)
     description   String?
     image         String?
-    message       Message[]  
+    aiTokens      Int        @default(0)
+    message       Message[]
     accounts      Account[]
     sessions      Session[]
     user          UserRoom[] @relation("user")

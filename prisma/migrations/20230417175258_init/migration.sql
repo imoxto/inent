@@ -45,6 +45,7 @@ CREATE TABLE "User" (
     "visibility" "Visibility" NOT NULL DEFAULT 'public',
     "description" TEXT,
     "image" TEXT,
+    "aiTokens" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );

@@ -91,11 +91,11 @@ function AddMessageForm({
         }}
       >
         <fieldset disabled={addPost.isLoading} className="min-w-0">
-          <div className="flex w-full items-end rounded bg-gray-500 px-3 py-2 text-lg text-gray-200">
+          <div className="text-md flex h-fit w-full items-end rounded bg-gray-500 px-3 py-2 text-gray-200">
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="flex-1 resize-none bg-transparent outline-0"
+              className="h-fit flex-1 resize-none bg-transparent outline-0"
               rows={message.split(/\r|\n/).length}
               id="text"
               name="text"

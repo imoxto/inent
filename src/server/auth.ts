@@ -23,6 +23,7 @@ declare module "next-auth" {
       username?: string;
       description?: string;
       visibility?: Visibility;
+      aiTokens?: number;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -32,6 +33,7 @@ declare module "next-auth" {
     username?: string;
     description?: string;
     visibility?: Visibility;
+    aiTokens?: number;
     // ...other properties
     // role: UserRole;
   }
@@ -52,6 +54,7 @@ export const authOptions: NextAuthOptions = {
         session.user.image = user.image;
         session.user.description = user.description;
         session.user.visibility = user.visibility;
+        session.user.aiTokens = user.aiTokens;
         // session.user.role = user.role; <-- put other properties on the session here
       }
       return session;

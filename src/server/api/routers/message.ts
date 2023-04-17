@@ -5,11 +5,77 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { env } from "~/env.mjs";
 import { TRPCError } from "@trpc/server";
 import { cgptRequest } from "~/server/external/cgpt";
+import { PrismaClient, Room } from "@prisma/client";
+import { createId } from "@paralleldrive/cuid2";
+import { User } from "next-auth";
+import { aiChatBot } from "~/constants";
 
 const getAblyChannel = (roomId: string) => {
   const client = new Ably.Rest(env.ABLY_API_KEY);
   return client.channels.get(`roomId:${roomId}`);
 };
+
+export async function postCgptMessage(
+  message: string,
+  prisma: PrismaClient,
+  user: User,
+  room: Room
+) {
+  let messageResponse: string;
+  if (user.aiTokens && user.aiTokens > 1000) {
+    messageResponse =
+      "I'm sorry! You have have exceeded your daily limit of 1000 tokens. Please come back tomorrow or increase the limit via payment. For now there is no direct payment system. However, if you want to buy extended daily limit, email me at mohammad.rafid.hamid@g.bracu.ac.bd";
+
+    const messageObject = {
+      id: createId(),
+      roomId: room.id,
+      userId: aiChatBot.id,
+      content: messageResponse,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    getAblyChannel(room.id).publish("new-message", {
+      ...messageObject,
+      user: {
+        name: aiChatBot.name,
+        image: aiChatBot.image,
+      },
+    });
+  } else {
+    const cgptMessage = await cgptRequest(message);
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        aiTokens: {
+          increment: cgptMessage.data.usage.total_tokens,
+        },
+      },
+    });
+    if (!cgptMessage.data.choices[0]) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "No response from CGPT",
+      });
+    }
+    messageResponse = cgptMessage.data.choices[0]?.message.content;
+    const messageObject = await prisma.message.create({
+      data: {
+        content: messageResponse,
+        roomId: room.id,
+        userId: aiChatBot.id,
+      },
+    });
+    getAblyChannel(room.id).publish("new-message", {
+      ...messageObject,
+      user: {
+        name: aiChatBot.name,
+        image: aiChatBot.image,
+      },
+    });
+  }
+}
 
 export const messageRouter = createTRPCRouter({
   infinite: protectedProcedure
@@ -111,36 +177,15 @@ export const messageRouter = createTRPCRouter({
         },
       });
 
-      const aiReciever = room.userRoom.find(
-        (ur) => ur.userId === "Ai-chatbot-v0"
-      );
+      const aiReciever = room.userRoom.find((ur) => ur.userId === aiChatBot.id);
+
       if (aiReciever) {
-        cgptRequest(input.messageContent)
-          .then((res) => {
-            if (!res.data.choices[0]?.message.content) {
-              return;
-            }
-            ctx.prisma.message
-              .create({
-                data: {
-                  content: res.data.choices[0]?.message.content,
-                  roomId: input.roomId,
-                  userId: aiReciever.userId,
-                },
-              })
-              .then((message) => {
-                getAblyChannel(input.roomId).publish("new-message", {
-                  ...message,
-                  user: {
-                    name: "AI chatbot v0",
-                    image: "/cute_robot.webp",
-                  },
-                });
-              });
-          })
-          .catch((err) => {
-            console.error(err);
-          });
+        postCgptMessage(
+          input.messageContent,
+          ctx.prisma,
+          ctx.session.user,
+          room
+        );
       }
 
       return message;

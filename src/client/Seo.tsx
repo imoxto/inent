@@ -1,9 +1,6 @@
 import Head from "next/head";
 
-const DOMAIN =
-  process.env.NODE_ENV === "production"
-    ? "https://inent.imoxto.me"
-    : "http://localhost:3000";
+const DOMAIN = "/";
 const DEFAULT_OG_IMAGE = "/inent.png";
 
 export function Seo({
