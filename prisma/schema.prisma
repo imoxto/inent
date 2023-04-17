@@ -51,7 +51,7 @@ model User {
     visibility    Visibility @default(public)
     description   String?
     image         String?
-    message       Message[]
+    message       Message[]  
     accounts      Account[]
     sessions      Session[]
     user          UserRoom[] @relation("user")
@@ -103,7 +103,6 @@ model UserRoom {
     inviterId String
     inviter   User         @relation("inviter", fields: [inviterId], references: [id], onUpdate: Cascade, onDelete: Cascade)
     role      UserRoomRole @default(member)
-    confirmed Boolean      @default(false)
 
     @@id([roomId, userId])
 }

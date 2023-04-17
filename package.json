@@ -6,7 +6,11 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "db": "prisma studio",
+    "db:prod": "dotenv -e .env.production prisma studio",
+    "migrate-db": "prisma migrate dev",
+    "migrate-db:prod": "dotenv -e .env.production prisma migrate deploy"
   },
   "prisma": {
     "seed": "ts-node --transpile-only src/utils/seed.cts"
@@ -45,6 +49,7 @@
     "@typescript-eslint/eslint-plugin": "^5.47.1",
     "@typescript-eslint/parser": "^5.47.1",
     "autoprefixer": "^10.4.7",
+    "dotenv-cli": "^7.2.1",
     "eslint": "^8.30.0",
     "eslint-config-next": "13.1.6",
     "postcss": "^8.4.14",
