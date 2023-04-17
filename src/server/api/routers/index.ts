@@ -18,11 +18,7 @@ export const rootRouter = createTRPCRouter({
       select: { id: true, name: true, username: true, image: true },
       where: {
         visibility: "public",
-        OR: [
-          { username: { search: input } },
-          { name: { search: input } },
-          { id: { search: input } },
-        ],
+        name: { search: input },
       },
       take: 5,
     });

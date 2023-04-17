@@ -3,16 +3,13 @@
 
 generator client {
     provider        = "prisma-client-js"
-    previewFeatures = ["fullTextSearch"]
+    previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
-    provider = "postgres"
-    // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
 }
 
 // Necessary for Next auth
@@ -32,6 +29,7 @@ model Account {
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
+    @@index([userId])
 }
 
 model Session {
@@ -40,6 +38,8 @@ model Session {
     userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
 }
 
 model User {
@@ -55,8 +55,9 @@ model User {
     message       Message[]
     accounts      Account[]
     sessions      Session[]
-    user          UserRoom[] @relation("user")
-    inviter       UserRoom[] @relation("inviter")
+    userRoom      UserRoom[]
+
+    @@fulltext([name])
 }
 
 model VerificationToken {
@@ -94,18 +95,20 @@ model Room {
     updatedAt   DateTime   @updatedAt
     userRoom    UserRoom[]
     message     Message[]
+
+    @@fulltext([name])
 }
 
 model UserRoom {
-    roomId    String
-    room      Room         @relation(fields: [roomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    userId    String
-    user      User         @relation("user", fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    inviterId String
-    inviter   User         @relation("inviter", fields: [inviterId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    role      UserRoomRole @default(member)
+    roomId String
+    room   Room         @relation(fields: [roomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    userId String
+    user   User         @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    role   UserRoomRole @default(member)
 
     @@id([roomId, userId])
+    @@index([roomId])
+    @@index([userId])
 }
 
 model Message {
@@ -117,4 +120,7 @@ model Message {
     content   String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    @@index([roomId])
+    @@index([userId])
 }
