@@ -129,7 +129,6 @@ export const roomRouter = createTRPCRouter({
           roomId: room.id,
           inviterId: userId,
           role: "member",
-          confirmed: true,
         },
       });
     }),

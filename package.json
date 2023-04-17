@@ -10,7 +10,8 @@
     "db": "prisma studio",
     "db:prod": "dotenv -e .env.production prisma studio",
     "migrate-db": "prisma migrate dev",
-    "migrate-db:prod": "dotenv -e .env.production prisma migrate deploy"
+    "migrate-db:prod": "dotenv -e .env.production prisma migrate deploy",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "prisma": {
     "seed": "ts-node --transpile-only src/utils/seed.cts"
