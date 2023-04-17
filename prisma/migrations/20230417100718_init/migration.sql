@@ -77,7 +77,6 @@ CREATE TABLE "UserRoom" (
     "userId" TEXT NOT NULL,
     "inviterId" TEXT NOT NULL,
     "role" "UserRoomRole" NOT NULL DEFAULT 'member',
-    "confirmed" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "UserRoom_pkey" PRIMARY KEY ("roomId","userId")
 );
