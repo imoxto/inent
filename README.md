@@ -24,6 +24,7 @@ The following requirements are fullfilled by this project:
 
 - Special user named `AI chatbot v0`
   - can communicate only in DMs
+  - replies intellegently when DM'ed
   - follows regular DM rules
   - cant join groups
 
@@ -57,8 +58,3 @@ The following requirements are fullfilled by this project:
   - updating a message should be multicasted to all members of a room
   - deleting a message should be multicasted to all members of a room
   - user-room roles should be followed while multicasting
-
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
