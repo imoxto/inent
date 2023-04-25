@@ -24,7 +24,7 @@ The following requirements are fullfilled by this project:
 
 - Special user named `AI chatbot v0`
   - can communicate only in DMs
-  - replies intellegently when DM'ed
+  - replies intellegently when DM'ed (doesnt work in [prod](https://inent.imoxto.me) because vercel doesnt allow requests to last more than 10s)
   - follows regular DM rules
   - cant join groups
 
