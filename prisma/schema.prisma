@@ -3,13 +3,14 @@
 
 generator client {
     provider        = "prisma-client-js"
-    previewFeatures = ["fullTextSearch", "fullTextIndex"]
+    previewFeatures = ["fullTextSearch", "jsonProtocol"]
 }
 
 datasource db {
-    provider     = "mysql"
-    url          = env("DATABASE_URL")
-    relationMode = "prisma"
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING") // used for migrations
 }
 
 // Necessary for Next auth
@@ -56,8 +57,6 @@ model User {
     accounts      Account[]
     sessions      Session[]
     userRoom      UserRoom[]
-
-    @@fulltext([name])
 }
 
 model VerificationToken {
@@ -95,8 +94,6 @@ model Room {
     updatedAt   DateTime   @updatedAt
     userRoom    UserRoom[]
     message     Message[]
-
-    @@fulltext([name])
 }
 
 model UserRoom {

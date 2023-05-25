@@ -14,20 +14,24 @@ import {
   JoinRoomForm,
   UpdateMessageForm,
 } from "~/client/forms/roomForms";
+import useAutosizeTextArea from "~/client/hooks";
 
 function AddMessageForm({
   onMessagePost,
   roomId,
   disabled,
+  containerHeight,
 }: {
   onMessagePost: () => void;
   roomId: string;
   disabled?: boolean;
+  containerHeight?: number;
 }) {
   const addPost = api.message.create.useMutation();
   const { data: session } = useSession();
   const [message, setMessage] = useState("");
   const [enterToPostMessage, setEnterToPostMessage] = useState(true);
+  const textAreaRef = useAutosizeTextArea(message, containerHeight);
   async function postMessage() {
     const input = {
       messageContent: message,
@@ -93,8 +97,11 @@ function AddMessageForm({
         <fieldset disabled={addPost.isLoading} className="min-w-0">
           <div className="text-md flex h-fit w-full items-end rounded bg-gray-500 px-3 py-2 text-gray-200">
             <textarea
+              ref={textAreaRef}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value);
+              }}
               className="h-fit flex-1 resize-none bg-transparent outline-0"
               rows={message.split(/\r|\n/).length}
               id="text"
@@ -153,6 +160,8 @@ export default function IndexPage() {
   // const [channel, setChannel] = useState<Ably.Types.RealtimeChannelPromise | null>(null)
   type Post = NonNullable<typeof messages>[number];
   const scrollTargetRef = useRef<HTMLDivElement>(null);
+  const messageSectionRef = useRef<HTMLDivElement>(null);
+
   const { data: room } = api.room.getMyRoom.useQuery(roomId);
   const isAdmin = room?.me?.role === "admin";
 
@@ -248,7 +257,10 @@ export default function IndexPage() {
     <div className="flex h-screen w-screen flex-col md:flex-row">
       <ChatSideBar roomId={roomId} />
       <div className="flex-1 overflow-y-hidden md:h-screen">
-        <section className="flex h-full flex-col justify-end space-y-4 bg-gray-700 p-4">
+        <section
+          ref={messageSectionRef}
+          className="flex h-full flex-col justify-end space-y-4 bg-gray-700 p-4"
+        >
           <div className="space-y-4 overflow-y-auto">
             <button
               data-testid="loadMore"
@@ -316,6 +328,7 @@ export default function IndexPage() {
             <AddMessageForm
               disabled={!room}
               roomId={roomId}
+              containerHeight={messageSectionRef.current?.clientHeight}
               onMessagePost={() => scrollToBottomOfList()}
             />
             <p className="h-2 italic text-gray-400">
