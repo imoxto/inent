@@ -25,13 +25,15 @@ export function ChatSideBar({ roomId }: { roomId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex w-full flex-col bg-gray-800 md:w-72">Loading...</div>
+      <div className="flex w-full flex-col bg-gray-800 text-center text-lg md:w-72">
+        Loading...
+      </div>
     );
   }
 
   if (!room) {
     return (
-      <div className="flex w-full flex-col bg-gray-800 md:w-72">
+      <div className="flex w-full flex-col bg-gray-800 text-center text-lg md:w-72">
         Room not found!
       </div>
     );
