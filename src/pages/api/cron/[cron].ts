@@ -10,6 +10,7 @@ export default async function handler(req: NextRequest) {
   try {
     const cron = req.nextUrl.searchParams.get("cron");
     if (!cron) return new Response("No cron provided", { status: 400 });
+    console.log("Running cron!");
     const users = await prisma.user.findMany();
     messages.push(`Found ${users.length} users`);
     const tokenExceededUsers = users
